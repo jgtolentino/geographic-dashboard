@@ -562,25 +562,25 @@ export function usePerformanceMetrics(filters: FilterState) {
           name: 'Total Revenue',
           value: `₱${(executive.data.totalRevenue / 1000000).toFixed(2)}M`,
           change: `${executive.data.revenueGrowth > 0 ? '+' : ''}${executive.data.revenueGrowth}%`,
-          trend: executive.data.revenueGrowth > 0 ? 'up' : executive.data.revenueGrowth < 0 ? 'down' : 'stable' as const
+          trend: (executive.data.revenueGrowth > 0 ? 'up' : executive.data.revenueGrowth < 0 ? 'down' : 'stable') as 'up' | 'down' | 'stable'
         },
         {
           name: 'Transactions',
           value: executive.data.totalTransactions.toLocaleString(),
           change: `${executive.data.transactionGrowth > 0 ? '+' : ''}${executive.data.transactionGrowth}%`,
-          trend: executive.data.transactionGrowth > 0 ? 'up' : executive.data.transactionGrowth < 0 ? 'down' : 'stable' as const
+          trend: (executive.data.transactionGrowth > 0 ? 'up' : executive.data.transactionGrowth < 0 ? 'down' : 'stable') as 'up' | 'down' | 'stable'
         },
         {
           name: 'Avg Transaction',
           value: `₱${executive.data.avgBasketSize}`,
           change: '0%',
-          trend: 'stable' as const
+          trend: 'stable' as 'up' | 'down' | 'stable'
         },
         {
           name: 'Active Stores',
           value: executive.data.activeStores.toString(),
           change: '0%',
-          trend: 'stable' as const
+          trend: 'stable' as 'up' | 'down' | 'stable'
         }
       ]
       
