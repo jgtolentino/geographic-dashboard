@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { MapPin, TrendingUp, Users, BarChart3, Activity, DollarSign, Package, AlertCircle, RefreshCw } from 'lucide-react'
+import posthog from 'posthog-js'
 
 // Production Supabase configuration
 const SUPABASE_URL = 'https://cxzllzyxwpyptfretryc.supabase.co'
@@ -61,6 +62,44 @@ export default function ScoutChoroplethDashboard() {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null)
   const [metricType, setMetricType] = useState<'transactions' | 'revenue' | 'stores'>('transactions')
   const [dataSource, setDataSource] = useState<'live' | 'fallback'>('fallback')
+
+  // PostHog tracking functions
+  const trackRegionHover = (regionName: string) => {
+    try {
+      posthog.capture('geo_region_hover', { 
+        region_name: regionName,
+        metric_type: metricType,
+        data_source: dataSource
+      })
+    } catch (e) {
+      // Silently fail if PostHog not initialized
+    }
+  }
+
+  const trackRegionClick = (regionName: string) => {
+    try {
+      posthog.capture('geo_region_click', { 
+        region_name: regionName,
+        metric_type: metricType,
+        data_source: dataSource,
+        had_data: data.some(d => d.region === regionName)
+      })
+    } catch (e) {
+      // Silently fail if PostHog not initialized
+    }
+  }
+
+  const trackMetricChange = (newMetric: string) => {
+    try {
+      posthog.capture('geo_metric_change', {
+        from_metric: metricType,
+        to_metric: newMetric,
+        selected_region: selectedRegion
+      })
+    } catch (e) {
+      // Silently fail if PostHog not initialized
+    }
+  }
 
   // Fetch live data from Supabase with robust error handling
   const fetchLiveData = async () => {
@@ -228,7 +267,10 @@ export default function ScoutChoroplethDashboard() {
             ].map(({ key, label, icon: Icon, color }) => (
               <button
                 key={key}
-                onClick={() => setMetricType(key as any)}
+                onClick={() => {
+                  trackMetricChange(key)
+                  setMetricType(key as any)
+                }}
                 className={`px-4 py-2 rounded-md text-sm font-medium flex items-center transition-all duration-200 ${
                   metricType === key
                     ? `bg-${color}-100 text-${color}-700 shadow-sm`
@@ -313,9 +355,15 @@ export default function ScoutChoroplethDashboard() {
                         strokeWidth={isSelected ? "3" : isHovered ? "2" : "1"}
                         className="cursor-pointer transition-all duration-300 hover:brightness-110"
                         filter={isSelected || isHovered ? "url(#dropShadow)" : "none"}
-                        onMouseEnter={() => setHoveredRegion(regionName)}
+                        onMouseEnter={() => {
+                          setHoveredRegion(regionName)
+                          trackRegionHover(regionName)
+                        }}
                         onMouseLeave={() => setHoveredRegion(null)}
-                        onClick={() => setSelectedRegion(regionName)}
+                        onClick={() => {
+                          setSelectedRegion(regionName)
+                          trackRegionClick(regionName)
+                        }}
                       />
                       
                       {/* Enhanced Region Label */}
@@ -432,7 +480,10 @@ export default function ScoutChoroplethDashboard() {
                       <div 
                         key={region.region}
                         className="flex justify-between items-center text-sm cursor-pointer hover:bg-white hover:shadow-sm p-3 rounded-lg transition-all group"
-                        onClick={() => setSelectedRegion(region.region)}
+                        onClick={() => {
+                          setSelectedRegion(region.region)
+                          trackRegionClick(region.region)
+                        }}
                       >
                         <span className="font-medium group-hover:text-blue-600">
                           {index + 1}. {region.region.length > 20 ? region.region.substring(0, 20) + '...' : region.region}
