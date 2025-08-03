@@ -69,9 +69,9 @@ export function useBrandIntelligence() {
           category: tx.product_category || 'Unknown',
           transactions: 0,
           revenue: 0,
-          stores: new Set(),
-          regions: new Set(),
-          engagementScores: [],
+          stores: new Set<string>(),
+          regions: new Set<string>(),
+          engagementScores: [] as number[],
           totalValue: 0
         }
 

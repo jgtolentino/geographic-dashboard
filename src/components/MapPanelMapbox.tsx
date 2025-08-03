@@ -10,6 +10,11 @@ import { MapPin, Layers, Eye, EyeOff, RotateCcw } from 'lucide-react';
 // Set your Mapbox token
 mapboxgl.accessToken = 'pk.eyJ1Ijoiamd0b2xlbnRpbm8iLCJhIjoiY21jMmNycWRiMDc0ajJqcHZoaDYyeTJ1NiJ9.Dns6WOql16BUQ4l7otaeww';
 
+// Coalesce token to string | undefined for react-map-gl
+const MAPBOX_TOKEN: string | undefined =
+  (typeof mapboxgl.accessToken === 'string' ? mapboxgl.accessToken : undefined)
+  ?? (process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string | undefined);
+
 interface MapPanelProps {
   points?: Array<{
     id: string;
@@ -247,7 +252,7 @@ export default function MapPanelMapbox({
         ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
-        mapboxAccessToken={mapboxgl.accessToken!}
+        mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle={showBasemap ? mapStyles[mapStyle as keyof typeof mapStyles] : {
           version: 8,
           sources: {},
