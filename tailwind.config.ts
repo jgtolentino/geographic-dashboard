@@ -8,6 +8,14 @@ export default {
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
 	],
+	safelist: [
+		// Dynamic color classes for the choropleth dashboard
+		'bg-blue-100', 'text-blue-600', 'text-blue-700', 'text-blue-400', 'text-blue-500',
+		'bg-green-100', 'text-green-600', 'text-green-700', 'text-green-400', 'text-green-500', 'bg-green-500',
+		'bg-orange-100', 'text-orange-600', 'text-orange-700', 'text-orange-400', 'text-orange-500',
+		'bg-purple-100', 'text-purple-600', 'text-purple-700', 'text-purple-400', 'text-purple-500',
+		'bg-yellow-100', 'text-yellow-700', 'bg-yellow-500',
+	],
 	prefix: "",
 	theme: {
 		container: {
