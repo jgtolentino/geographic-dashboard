@@ -1,0 +1,54 @@
+// API client for insights endpoint
+export async function fetchInsights(context: any) {
+  // For now, return mock insights since we need a backend server
+  // In production, this would call your backend API
+  
+  const mockInsights = {
+    insights: {
+      insights: [
+        {
+          type: 'revenue',
+          content: 'Revenue increased by 12.5% this week compared to last week, driven primarily by beverages category',
+          priority: 'high'
+        },
+        {
+          type: 'customer',
+          content: 'Peak shopping hours are between 3-5 PM with 42% of daily transactions',
+          priority: 'medium'
+        },
+        {
+          type: 'product',
+          content: 'Top 20% of SKUs contribute to 78% of revenue - consider optimizing inventory',
+          priority: 'high'
+        },
+        {
+          type: 'trend',
+          content: 'Weekend sales show 35% higher basket values than weekdays',
+          priority: 'medium'
+        }
+      ],
+      recommendations: [
+        {
+          action: 'Increase beverage inventory by 15% to meet growing demand',
+          impact: 'high',
+          effort: 'low'
+        },
+        {
+          action: 'Introduce bundle promotions during 3-5 PM peak hours',
+          impact: 'medium',
+          effort: 'medium'
+        },
+        {
+          action: 'Focus on top-performing SKUs and reduce slow-moving inventory',
+          impact: 'high',
+          effort: 'medium'
+        }
+      ]
+    }
+  }
+
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
+  return mockInsights
+}
