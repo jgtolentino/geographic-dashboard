@@ -21,34 +21,46 @@ export function BoxPlot({ data, title = "Box Plot", height = 300 }: BoxPlotProps
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current || !data || data.length === 0) return
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth
-    canvas.height = height
+    // Get the actual width from the parent container
+    const rect = canvas.getBoundingClientRect()
+    const width = rect.width || canvas.parentElement?.clientWidth || 800
+    
+    // Set canvas size with device pixel ratio for crisp rendering
+    const dpr = window.devicePixelRatio || 1
+    canvas.width = width * dpr
+    canvas.height = height * dpr
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
+    
+    // Scale context for device pixel ratio
+    ctx.scale(dpr, dpr)
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.clearRect(0, 0, width, height)
 
     const padding = 40
     const boxWidth = 40
-    const availableWidth = canvas.width - (padding * 2)
+    const availableWidth = width - (padding * 2)
     const boxSpacing = availableWidth / data.length
 
     // Find min/max values for scaling
     const allValues = data.flatMap(d => [d.min, d.max, ...(d.outliers || [])])
     const minValue = Math.min(...allValues)
     const maxValue = Math.max(...allValues)
-    const valueRange = maxValue - minValue
+    const valueRange = maxValue - minValue || 1 // Prevent divide by zero
 
+    // Calculate scale once outside the loop
+    const scale = (height - padding * 2) / valueRange
+    
     // Draw each box plot
     data.forEach((item, index) => {
       const x = padding + (index * boxSpacing) + (boxSpacing / 2)
-      const scale = (height - padding * 2) / valueRange
       
       const yMin = height - padding - ((item.min - minValue) * scale)
       const yQ1 = height - padding - ((item.q1 - minValue) * scale)
@@ -125,6 +137,25 @@ export function BoxPlot({ data, title = "Box Plot", height = 300 }: BoxPlotProps
       ctx.fillText(value.toFixed(0), padding - 10, y + 4)
     }
   }, [data, height])
+
+  // Add resize observer to handle responsive resizing
+  useEffect(() => {
+    if (!canvasRef.current) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (canvasRef.current) {
+        // Force re-render by updating canvas
+        const event = new Event('resize')
+        window.dispatchEvent(event)
+      }
+    })
+
+    resizeObserver.observe(canvasRef.current.parentElement!)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [])
 
   return (
     <Card className="glass-panel">

@@ -28,15 +28,25 @@ const generateTimeSeriesData = () => {
 
 const generateBoxPlotData = () => {
   const categories = ['Beverages', 'Snacks', 'Personal Care', 'Household', 'Tobacco']
-  return categories.map(cat => ({
-    label: cat,
-    min: Math.random() * 50,
-    q1: 50 + Math.random() * 100,
-    median: 150 + Math.random() * 100,
-    q3: 250 + Math.random() * 100,
-    max: 350 + Math.random() * 150,
-    outliers: [500 + Math.random() * 100, 550 + Math.random() * 100]
-  }))
+  return categories.map(cat => {
+    // Generate values in ascending order to ensure valid box plot
+    const min = 20 + Math.random() * 30 // 20-50
+    const q1 = min + 50 + Math.random() * 50 // min+50 to min+100
+    const median = q1 + 30 + Math.random() * 40 // q1+30 to q1+70
+    const q3 = median + 30 + Math.random() * 40 // median+30 to median+70
+    const max = q3 + 50 + Math.random() * 100 // q3+50 to q3+150
+    const outliers = [max + 50 + Math.random() * 50, max + 120 + Math.random() * 50]
+    
+    return {
+      label: cat,
+      min,
+      q1,
+      median,
+      q3,
+      max,
+      outliers
+    }
+  })
 }
 
 const generateHeatmapData = () => {
