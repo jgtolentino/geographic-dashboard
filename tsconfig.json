@@ -51,6 +51,9 @@
   ],
   "exclude": [
     "node_modules",
-    "supabase/functions"
+    "supabase/functions",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "tests/**/*"
   ]
 }
