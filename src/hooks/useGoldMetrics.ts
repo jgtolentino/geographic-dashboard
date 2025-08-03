@@ -17,14 +17,14 @@ export const useGoldMetrics = (filters: FilterState) => {
       let query = supabase
         .from('gold_daily_metrics')
         .select('*')
-        .order('date', { ascending: false })
+        .order('metric_date', { ascending: false })
 
       // Apply filters
       if (filters.dateRange.startDate) {
-        query = query.gte('date', filters.dateRange.startDate)
+        query = query.gte('metric_date', filters.dateRange.startDate)
       }
       if (filters.dateRange.endDate) {
-        query = query.lte('date', filters.dateRange.endDate)
+        query = query.lte('metric_date', filters.dateRange.endDate)
       }
       if (filters.location !== 'all') {
         query = query.eq('store_name', filters.location)
@@ -66,7 +66,7 @@ export const useLatestKPIs = () => {
       const { data, error } = await supabase
         .from('gold_daily_metrics')
         .select('*')
-        .order('date', { ascending: false })
+        .order('metric_date', { ascending: false })
         .limit(7) // Last 7 days
 
       if (error) throw error

@@ -152,13 +152,13 @@ export function TransactionTrendsV2({ filters }: TransactionTrendsProps) {
     { key: 'customer_id', label: 'Customer' }
   ]
 
-  const transactionTableData = transactions.slice(0, 20).map(t => ({
-    transaction_id: t.transaction_id.slice(0, 8),
-    transaction_date: new Date(t.transaction_date).toLocaleDateString(),
-    store_name: t.store_id,
-    category: t.category,
-    total_price: `₱${t.total_price.toLocaleString()}`,
-    customer_id: t.customer_id.slice(0, 8)
+  const transactionTableData = (transactions || []).slice(0, 20).map(t => ({
+    transaction_id: t?.transaction_id?.slice(0, 8) || '',
+    transaction_date: t?.transaction_date ? new Date(t.transaction_date).toLocaleDateString() : '',
+    store_name: t?.store_id || '',
+    category: t?.category || '',
+    total_price: t?.total_price ? `₱${t.total_price.toLocaleString()}` : '₱0',
+    customer_id: t?.customer_id?.slice(0, 8) || ''
   }))
 
   return (
