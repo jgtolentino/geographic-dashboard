@@ -16,6 +16,11 @@ const MapPanel = dynamic(() => import('@/components/MapPanel'), {
   loading: () => <LoadingSpinner message="Loading GL Map..." />
 })
 
+const MapPanelMapbox = dynamic(() => import('@/components/MapPanelMapbox'), {
+  ssr: false,
+  loading: () => <LoadingSpinner message="Loading Mapbox Map..." />
+})
+
 function LoadingSpinner({ message }: { message: string }) {
   return (
     <div className="min-h-[600px] bg-gray-50 flex items-center justify-center rounded-lg">
@@ -28,8 +33,9 @@ function LoadingSpinner({ message }: { message: string }) {
 }
 
 export default function GeographicDashboardPage() {
-  const [viewMode, setViewMode] = useState<'choropleth' | 'gl'>('choropleth')
+  const [viewMode, setViewMode] = useState<'choropleth' | 'gl' | 'mapbox'>('choropleth')
   const [metric, setMetric] = useState<'transactions' | 'revenue' | 'stores'>('transactions')
+  const [useMapbox, setUseMapbox] = useState(false)
   const [glMapData, setGlMapData] = useState<any[]>([])
   const [geoBoundaries, setGeoBoundaries] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -86,9 +92,9 @@ export default function GeographicDashboardPage() {
     }
   }, [supabase, metric])
 
-  // Fetch data when view mode changes to GL
+  // Fetch data when view mode changes to GL or Mapbox
   useEffect(() => {
-    if (viewMode === 'gl' && glMapData.length === 0) {
+    if ((viewMode === 'gl' || viewMode === 'mapbox') && glMapData.length === 0) {
       fetchGlMapData()
     }
   }, [viewMode, fetchGlMapData, glMapData.length])
@@ -129,7 +135,7 @@ export default function GeographicDashboardPage() {
             <div className="flex bg-white rounded-lg shadow-sm border border-gray-300">
               <button
                 onClick={() => setViewMode('choropleth')}
-                className={`flex items-center px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-l-lg transition-colors ${
                   viewMode === 'choropleth'
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-700 hover:bg-gray-100'
@@ -140,7 +146,7 @@ export default function GeographicDashboardPage() {
               </button>
               <button
                 onClick={() => setViewMode('gl')}
-                className={`flex items-center px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+                className={`flex items-center px-3 py-2 text-sm font-medium transition-colors ${
                   viewMode === 'gl'
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-700 hover:bg-gray-100'
@@ -148,6 +154,17 @@ export default function GeographicDashboardPage() {
               >
                 <Map className="h-4 w-4 mr-2" />
                 GL Map
+              </button>
+              <button
+                onClick={() => setViewMode('mapbox')}
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+                  viewMode === 'mapbox'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <Map className="h-4 w-4 mr-2" />
+                Mapbox
               </button>
             </div>
           </div>
@@ -160,7 +177,15 @@ export default function GeographicDashboardPage() {
           ) : (
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               {loading ? (
-                <LoadingSpinner message="Loading GL Map Data..." />
+                <LoadingSpinner message="Loading Map Data..." />
+              ) : viewMode === 'mapbox' ? (
+                <MapPanelMapbox
+                  points={glMapData}
+                  geojson={geoBoundaries}
+                  metric={metric}
+                  onRegionClick={handleRegionClick}
+                  height="700px"
+                />
               ) : (
                 <MapPanel
                   points={glMapData}
@@ -191,11 +216,26 @@ export default function GeographicDashboardPage() {
                   <li>View trends over time with the growth indicator</li>
                 </ul>
               </>
+            ) : viewMode === 'mapbox' ? (
+              <>
+                <p>
+                  The <strong>Mapbox View</strong> provides premium map styles and satellite imagery with the same 
+                  high-performance WebGL rendering. Choose from multiple Mapbox styles including streets, satellite, 
+                  light, dark, and navigation themes.
+                </p>
+                <ul className="mt-2">
+                  <li>Premium Mapbox basemap styles and satellite imagery</li>
+                  <li>Same heatmap and clustering capabilities as GL Map</li>
+                  <li>Smooth transitions and animations</li>
+                  <li>Professional cartography with global coverage</li>
+                </ul>
+              </>
             ) : (
               <>
                 <p>
                   The <strong>GL Map View</strong> uses WebGL acceleration for smooth performance with large datasets. 
                   This view supports dynamic clustering, heatmaps, and seamless zoom from country level down to barangay details.
+                  Uses free and open-source MapLibre with CartoDB basemaps.
                 </p>
                 <ul className="mt-2">
                   <li>Toggle between heatmap and point visualization</li>
