@@ -1,6 +1,7 @@
 import '@/styles/index.css'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/design-system/theme-provider'
+import { Navigation } from '@/components/navigation'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider defaultTheme="light" storageKey="scout-theme">
+          <Navigation />
           {children}
         </ThemeProvider>
       </body>
