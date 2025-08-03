@@ -14,9 +14,9 @@
       "static/css/718ee59ff2172a97.css",
       "static/chunks/d5ad3d22.1a3b61d92ac3aed4.js",
       "static/chunks/05f6971a.076c90fb727f4145.js",
-      "static/chunks/709.f415135ca6cd3066.js",
+      "static/chunks/871.a46654bda8ad7e23.js",
       "static/chunks/64.a532adfba0fafebb.js",
-      "static/chunks/102.831b046691ab4d43.js"
+      "static/chunks/102.bbf26a7f4d57b242.js"
     ]
   },
   "../app/geographic/page.tsx -> @/components/MapPanelMapbox": {
@@ -25,9 +25,9 @@
       "static/css/fd4f548ab5cc9f22.css",
       "static/chunks/d5ad3d22.1a3b61d92ac3aed4.js",
       "static/chunks/c36f3faa.d8c6cb658b272be4.js",
-      "static/chunks/709.f415135ca6cd3066.js",
+      "static/chunks/871.a46654bda8ad7e23.js",
       "static/chunks/7.f95ab6ee89bbf64b.js",
-      "static/chunks/911.f4f3bff464070c6d.js"
+      "static/chunks/911.fdc0c058973cc2cc.js"
     ]
   },
   "../app/geographic/page.tsx -> @/components/scout-choropleth-dashboard": {

@@ -247,7 +247,7 @@ export default function MapPanelMapbox({
         ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
-        mapboxAccessToken={mapboxgl.accessToken}
+        mapboxAccessToken={mapboxgl.accessToken!}
         mapStyle={showBasemap ? mapStyles[mapStyle as keyof typeof mapStyles] : {
           version: 8,
           sources: {},
