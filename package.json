@@ -2,6 +2,7 @@
   "name": "geographic-analytics-dashboard",
   "version": "1.0.0",
   "description": "Scout Platform v5 - Geographic Analytics Dashboard with ChartVision AI",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:next": "next dev",

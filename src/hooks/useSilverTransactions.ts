@@ -21,10 +21,10 @@ export const useSilverTransactions = (filters: FilterState, limit = 1000) => {
         .limit(limit)
 
       // Apply filters
-      if (filters.dateRange.startDate) {
+      if (filters.dateRange?.startDate) {
         query = query.gte('transaction_date', filters.dateRange.startDate)
       }
-      if (filters.dateRange.endDate) {
+      if (filters.dateRange?.endDate) {
         query = query.lte('transaction_date', filters.dateRange.endDate)
       }
       if (filters.category !== 'all') {
@@ -67,8 +67,8 @@ export const useProductMix = (filters: FilterState) => {
       // Fetch aggregated data using SQL function or RPC
       const { data, error } = await supabase
         .rpc('get_product_mix_stats', {
-          start_date: filters.dateRange.startDate,
-          end_date: filters.dateRange.endDate,
+          start_date: filters.dateRange?.startDate,
+          end_date: filters.dateRange?.endDate,
           store_filter: filters.location === 'all' ? null : filters.location
         })
 
@@ -125,8 +125,8 @@ export const useTopSKUs = (filters: FilterState, limit = 20) => {
       
       const { data, error } = await supabase
         .rpc('get_top_skus', {
-          start_date: filters.dateRange.startDate,
-          end_date: filters.dateRange.endDate,
+          start_date: filters.dateRange?.startDate,
+          end_date: filters.dateRange?.endDate,
           category_filter: filters.category === 'all' ? null : filters.category,
           brand_filter: filters.brand === 'all' ? null : filters.brand,
           result_limit: limit

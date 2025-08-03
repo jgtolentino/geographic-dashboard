@@ -64,8 +64,8 @@ export function RecommendationPanelV2({ isOpen, onClose, context }: Recommendati
         type: 'general'
       })
 
-      setInsights(data.insights.insights || [])
-      setRecommendations(data.insights.recommendations || [])
+      setInsights((data.insights.insights || []) as Insight[])
+      setRecommendations((data.insights.recommendations || []) as Recommendation[])
     } catch (error) {
       console.error('Failed to fetch insights:', error)
     } finally {

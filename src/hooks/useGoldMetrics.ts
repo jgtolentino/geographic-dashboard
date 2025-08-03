@@ -20,10 +20,10 @@ export const useGoldMetrics = (filters: FilterState) => {
         .order('metric_date', { ascending: false })
 
       // Apply filters
-      if (filters.dateRange.startDate) {
+      if (filters.dateRange?.startDate) {
         query = query.gte('metric_date', filters.dateRange.startDate)
       }
-      if (filters.dateRange.endDate) {
+      if (filters.dateRange?.endDate) {
         query = query.lte('metric_date', filters.dateRange.endDate)
       }
       if (filters.location !== 'all') {

@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { supabase } from '../lib/fixed-supabase-api'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  'https://cxzllzyxwpyptfretryc.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4emxsenl4d3B5cHRmcmV0cnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNzYxODAsImV4cCI6MjA2Nzk1MjE4MH0.b794GEIWE4ZdMAm9xQYAJ0Gx-XEn1fhJBTIIeTro_1g'
+)
 
 // QA Dashboard Test Component
 export function QADashboardTest() {
@@ -56,7 +61,7 @@ export function QADashboardTest() {
         error: hourlyError,
         data: {
           hoursWithData: hourlyData?.length || 0,
-          peakHour: hourlyData?.reduce((max, h) => 
+          peakHour: hourlyData?.reduce((max: any, h: any) => 
             h.transaction_count > (max?.transaction_count || 0) ? h : max, hourlyData[0])
         }
       }

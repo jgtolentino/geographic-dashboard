@@ -53,8 +53,8 @@ export function TransactionTrendsV2({ filters }: TransactionTrendsProps) {
       // Fetch category distribution for box plot
       const { data: categoryStats } = await supabase
         .rpc('get_category_performance', {
-          start_date: filters.dateRange.startDate,
-          end_date: filters.dateRange.endDate
+          start_date: filters.dateRange?.startDate,
+          end_date: filters.dateRange?.endDate
         })
 
       if (categoryStats) {
@@ -102,8 +102,8 @@ export function TransactionTrendsV2({ filters }: TransactionTrendsProps) {
       const { data: weekdayStats } = await supabase
         .from('silver_transactions_cleaned')
         .select('category, is_weekend, total_price')
-        .gte('transaction_date', filters.dateRange.startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .lte('transaction_date', filters.dateRange.endDate || new Date().toISOString())
+        .gte('transaction_date', filters.dateRange?.startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .lte('transaction_date', filters.dateRange?.endDate || new Date().toISOString())
 
       if (weekdayStats) {
         // Aggregate by category and weekend
@@ -314,9 +314,15 @@ export function TransactionTrendsV2({ filters }: TransactionTrendsProps) {
         </CardHeader>
         <CardContent>
           <DataTable
-            columns={transactionTableColumns}
+            columns={[
+              { key: 'transaction_id', label: 'Transaction ID' },
+              { key: 'transaction_date', label: 'Date' },
+              { key: 'store_name', label: 'Store' },
+              { key: 'category', label: 'Category' },
+              { key: 'total_price', label: 'Total' },
+              { key: 'customer_id', label: 'Customer' }
+            ] as any}
             data={transactionTableData}
-            searchKey="transaction_id"
           />
         </CardContent>
       </Card>

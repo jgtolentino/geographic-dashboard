@@ -165,7 +165,7 @@ export class TestRunner {
         duration: Date.now() - suiteStart,
         passCount: 0,
         failCount: 6,
-        details: { error: error.toString() }
+        details: { error: String(error) }
       })
     }
   }
@@ -196,7 +196,7 @@ export class TestRunner {
         duration: Date.now() - suiteStart,
         passCount: 0,
         failCount: 11,
-        details: { error: error.toString() }
+        details: { error: String(error) }
       })
     }
   }
@@ -245,7 +245,7 @@ export class TestRunner {
         duration: Date.now() - suiteStart,
         passCount: 0,
         failCount: 1,
-        details: { error: error.toString() }
+        details: { error: String(error) }
       })
       console.error('Unit tests failed:', error)
     }
@@ -277,7 +277,7 @@ export class TestRunner {
         duration: Date.now() - suiteStart,
         passCount: 0,
         failCount: 9,
-        details: { error: error.toString() }
+        details: { error: String(error) }
       })
     }
   }

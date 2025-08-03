@@ -232,11 +232,7 @@ export function ProductMix({ filters }: ProductMixProps) {
                     <XAxis dataKey="items" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#0ea5e9">
-                      {categoryBreakdown.map((entry, index) => (
-                        <Bar key={`cell-${index}`} fill={`hsl(199, 89%, ${50 + index * 10}%)`} />
-                      ))}
-                    </Bar>
+                    <Bar dataKey="count" fill="#0ea5e9" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

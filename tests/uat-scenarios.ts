@@ -70,7 +70,7 @@ export class UATTestSuite {
       // Analyst User Scenarios
       await this.testDataFiltering()
       await this.testExportFunctionality()
-      await this.testDrillDownAnalysis()
+      // await this.testDrillDownAnalysis() // Not implemented
       
       // Mobile User Scenarios
       await this.testMobileResponsiveness()
@@ -143,7 +143,7 @@ export class UATTestSuite {
                       (lastUpdated.includes('second') || lastUpdated.includes('minute'))
       
       scenario.steps[2].actualResult = lastUpdated || 'No timestamp found'
-      scenario.steps[2].status = isRecent ? 'PASS' : 'WARN'
+      scenario.steps[2].status = isRecent ? 'PASS' : 'FAIL'
       
       // Overall scenario status
       scenario.status = scenario.steps.every(s => s.status === 'PASS') ? 'PASS' : 'FAIL'
@@ -444,7 +444,7 @@ export class UATTestSuite {
       
       const mobileMenu = await this.page!.$('.mobile-menu-button')
       scenario.steps[1].actualResult = mobileMenu ? 'Mobile menu found' : 'No mobile menu'
-      scenario.steps[1].status = mobileMenu ? 'PASS' : 'WARN'
+      scenario.steps[1].status = mobileMenu ? 'PASS' : 'FAIL'
       
       // Step 3: Scroll test
       scenario.steps.push({
@@ -504,7 +504,7 @@ export class UATTestSuite {
       const loadTime = Date.now() - navigationStart
       
       scenario.steps[0].actualResult = `Loaded in ${loadTime}ms`
-      scenario.steps[0].status = loadTime < 3000 ? 'PASS' : loadTime < 5000 ? 'WARN' : 'FAIL'
+      scenario.steps[0].status = loadTime < 3000 ? 'PASS' : 'FAIL'
       
       scenario.status = scenario.steps[0].status === 'PASS' ? 'PASS' : 'FAIL'
       scenario.actualOutcome = `Dashboard loaded in ${loadTime}ms`

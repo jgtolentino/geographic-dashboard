@@ -132,7 +132,7 @@ async function testTransactionTrends() {
     console.log(`   This Week: ${hook.data.weekTransactions.toLocaleString()} transactions`)
     
     if (hook.data.hourlyPattern.length > 0) {
-      const peakHour = hook.data.hourlyPattern.reduce((max, hour) => 
+      const peakHour = hook.data.hourlyPattern.reduce((max: any, hour: any) => 
         hour.transactions > (max?.transactions || 0) ? hour : max
       )
       console.log(`   Peak Hour: ${peakHour.hour}:00 (${peakHour.transactions} transactions)`)
@@ -154,11 +154,9 @@ async function testProductMix() {
     console.log('\n📦 Product Mix:')
     console.log(`   Total SKUs: ${hook.data.totalSKUs.toLocaleString()}`)
     console.log(`   Total Brands: ${hook.data.brandsCount}`)
-    console.log(`   Total Categories: ${hook.data.categoriesCount}`)
+    console.log(`   Total Categories: ${hook.data.topCategoryPercentage}%`)
     console.log(`   Top Category: ${hook.data.topCategory}`)
-    if (hook.data.topProducts.length > 0) {
-      console.log(`   Top Product: ${hook.data.topProducts[0].name}`)
-    }
+    // Additional product mix info could be added here
     return true
   }
   return false
@@ -195,13 +193,13 @@ async function testConsumerProfiling() {
     console.log('\n👥 Consumer Profile:')
     console.log(`   Top Gender: ${hook.data.topGender}`)
     console.log(`   Top Age Group: ${hook.data.topAgeGroup}`)
-    console.log(`   Unique Customers: ${hook.data.uniqueCustomers?.toLocaleString() || 'N/A'}`)
+    console.log(`   New Segments: ${hook.data.newSegments}`)
     
-    // Show gender distribution
-    if (hook.data.genderDistribution) {
-      console.log('   Gender Distribution:')
-      Object.entries(hook.data.genderDistribution).forEach(([gender, count]) => {
-        console.log(`     ${gender}: ${count}`)
+    // Show economic class distribution
+    if (hook.data.economicClassDistribution) {
+      console.log('   Economic Class Distribution:')
+      Object.entries(hook.data.economicClassDistribution).forEach(([cls, percentage]) => {
+        console.log(`     Class ${cls}: ${percentage}%`)
       })
     }
     return true

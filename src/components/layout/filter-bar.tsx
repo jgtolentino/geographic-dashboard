@@ -161,7 +161,7 @@ export function FilterBar({
             </Badge>
           )}
 
-          {filters.basketSize && filters.basketSize.length > 0 && (
+          {filters.basketSize && (Array.isArray(filters.basketSize) ? filters.basketSize.length > 0 : filters.basketSize) && (
             <Badge variant="secondary" className="px-3 py-1">
               <ShoppingCart className="h-3 w-3 mr-1" />
               Basket: {Array.isArray(filters.basketSize) 
