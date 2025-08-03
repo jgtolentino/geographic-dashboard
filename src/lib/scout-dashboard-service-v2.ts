@@ -312,7 +312,7 @@ export function useRegionalPerformance() {
       
       const { data: transactions, error: fetchError } = await supabase
         .from('scout.silver_transactions_cleaned')
-        .select('location, peso_value')
+        .select('location, peso_value, timestamp')
         .gte('timestamp', DATA_START)
         .lte('timestamp', DATA_END)
 
