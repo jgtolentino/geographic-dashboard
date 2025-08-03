@@ -29,6 +29,7 @@
     "test:ci": "npm run test:all -- --env=ci"
   },
   "dependencies": {
+    "@deck.gl/aggregation-layers": "^9.1.14",
     "@deck.gl/geo-layers": "^9.1.14",
     "@deck.gl/layers": "^9.1.14",
     "@deck.gl/react": "^9.1.14",

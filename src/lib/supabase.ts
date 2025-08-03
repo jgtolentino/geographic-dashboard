@@ -14,6 +14,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
+// Export a function to create new client instances
+export function createSupabaseClient() {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false
+    }
+  })
+}
+
 // Type definitions for Medallion pipeline tables
 export interface GoldDailyMetrics {
   id: string

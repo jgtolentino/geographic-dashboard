@@ -648,12 +648,4 @@ export function useConsumerInsights() {
   return { data, loading, error, refresh: fetchConsumerInsights }
 }
 
-// Export all competitive intelligence hooks
-export {
-  useBrandIntelligence,
-  useCreativeExcellence,
-  useCategoryIntelligence,
-  useGeographicIntelligence,
-  useMarketOverview,
-  useConsumerInsights
-}
+// All hooks are already exported as named exports above

@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { Suspense, useState, useCallback, useEffect } from 'react'
 import { Map, Layers3, ChevronDown } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
+import { createSupabaseClient as createClient } from '@/lib/supabase'
 
 // Dynamically import components to avoid SSR issues
 const ScoutChoroplethDashboard = dynamic(() => import('@/components/scout-choropleth-dashboard'), {

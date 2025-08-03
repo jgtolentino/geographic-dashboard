@@ -1,8 +1,9 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
-import Map, { MapRef, NavigationControl, ScaleControl } from 'react-map-gl';
+import Map, { NavigationControl, ScaleControl, MapRef } from 'react-map-gl/maplibre';
 import maplibregl from 'maplibre-gl';
 import DeckGL from '@deck.gl/react';
-import { HeatmapLayer, ScatterplotLayer, GeoJsonLayer } from '@deck.gl/layers';
+import { HeatmapLayer } from '@deck.gl/aggregation-layers';
+import { ScatterplotLayer, GeoJsonLayer } from '@deck.gl/layers';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { MapPin, Layers, Eye, EyeOff, RotateCcw } from 'lucide-react';
 

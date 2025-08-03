@@ -1,3 +1,51 @@
 {
-  "pages": {}
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-9b67f738d6b165aa.js",
+      "static/chunks/fd9d1056-ebd6b5127f112832.js",
+      "static/chunks/117-7d14e8cbde3364e4.js",
+      "static/chunks/main-app-a4f80f1389d3df5a.js",
+      "static/chunks/app/_not-found/page-6db03e9376fda80c.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-9b67f738d6b165aa.js",
+      "static/chunks/fd9d1056-ebd6b5127f112832.js",
+      "static/chunks/117-7d14e8cbde3364e4.js",
+      "static/chunks/main-app-a4f80f1389d3df5a.js",
+      "static/css/3f9932e1e72a38c7.css",
+      "static/chunks/852-73245cb7f792fce7.js",
+      "static/chunks/app/layout-073ffb88bf0c316e.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-9b67f738d6b165aa.js",
+      "static/chunks/fd9d1056-ebd6b5127f112832.js",
+      "static/chunks/117-7d14e8cbde3364e4.js",
+      "static/chunks/main-app-a4f80f1389d3df5a.js",
+      "static/chunks/app/page-0a8c3ee8346bca3d.js"
+    ],
+    "/test-visual/page": [
+      "static/chunks/webpack-9b67f738d6b165aa.js",
+      "static/chunks/fd9d1056-ebd6b5127f112832.js",
+      "static/chunks/117-7d14e8cbde3364e4.js",
+      "static/chunks/main-app-a4f80f1389d3df5a.js",
+      "static/chunks/617-8ff8fc910c6f2288.js",
+      "static/chunks/156-67ac6a3ad594518d.js",
+      "static/chunks/app/test-visual/page-abfa4e9df297c3cd.js"
+    ],
+    "/competitive/page": [
+      "static/chunks/webpack-9b67f738d6b165aa.js",
+      "static/chunks/fd9d1056-ebd6b5127f112832.js",
+      "static/chunks/117-7d14e8cbde3364e4.js",
+      "static/chunks/main-app-a4f80f1389d3df5a.js",
+      "static/chunks/app/competitive/page-af4ba72f1c1f7e9b.js"
+    ],
+    "/geographic/page": [
+      "static/chunks/webpack-9b67f738d6b165aa.js",
+      "static/chunks/fd9d1056-ebd6b5127f112832.js",
+      "static/chunks/117-7d14e8cbde3364e4.js",
+      "static/chunks/main-app-a4f80f1389d3df5a.js",
+      "static/chunks/580-17c2d8e81e81ab9c.js",
+      "static/chunks/app/geographic/page-684dc623670fa21b.js"
+    ]
+  }
 }
