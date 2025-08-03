@@ -21,7 +21,7 @@ import {
   useBusinessHealth,
   usePerformanceMetrics,
   useCategoryMix
-} from '@/lib/scout-dashboard-service-v2'
+} from '@/lib/scout-dashboard-service-gold'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import { TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, MapPin, AlertCircle, CheckCircle } from 'lucide-react'
 
