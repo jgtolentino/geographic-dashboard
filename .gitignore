@@ -13,6 +13,8 @@ node_modules
 # Build output
 dist
 build
+.next/
+out/
 
 # Logs
 npm-debug.log*
@@ -26,3 +28,15 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Test files
+test-*.png
+test-*.js
+test-*.mjs
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase
+.supabase/
