@@ -15,18 +15,28 @@ export const DASHBOARD_MODULES: ScoutDashboardModule[] = [
 ]
 
 export interface FilterState {
-  timeOfDay?: string[]
-  barangay?: string[]
-  region?: string[]
-  category?: string[]
-  brand?: string[]
-  skuName?: string[]
+  timeOfDay?: string | string[]
+  barangay?: string | string[]
+  region?: string | string[]
+  category?: string | string[]
+  brand?: string | string[]
+  skuName?: string | string[]
   weekVsWeekend?: 'week' | 'weekend' | 'all'
-  location?: string[]
-  basketSize?: number[]
-  ageGroup?: string[]
+  location?: string | string[]
+  basketSize?: number | number[]
+  ageGroup?: string | string[]
   gender?: 'male' | 'female' | 'all'
-  productCategory?: string[]
+  productCategory?: string | string[]
+  // Additional fields for real data integration
+  dateRange?: {
+    startDate?: string
+    endDate?: string
+  }
+  priceRange?: {
+    min: number
+    max: number
+  }
+  customerSegment?: string
 }
 
 export interface TransactionData {

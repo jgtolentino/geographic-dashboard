@@ -106,7 +106,9 @@ export function FilterBar({
           {filters.timeOfDay && filters.timeOfDay.length > 0 && (
             <Badge variant="secondary" className="px-3 py-1">
               <Calendar className="h-3 w-3 mr-1" />
-              Time: {filters.timeOfDay.join(', ')}
+              Time: {Array.isArray(filters.timeOfDay) 
+                ? filters.timeOfDay.join(', ') 
+                : filters.timeOfDay}
               <button
                 onClick={() => removeFilter('timeOfDay')}
                 className="ml-2 hover:text-destructive"
@@ -119,7 +121,9 @@ export function FilterBar({
           {filters.barangay && filters.barangay.length > 0 && (
             <Badge variant="secondary" className="px-3 py-1">
               <MapPin className="h-3 w-3 mr-1" />
-              Barangay: {filters.barangay.join(', ')}
+              Barangay: {Array.isArray(filters.barangay) 
+                ? filters.barangay.join(', ') 
+                : filters.barangay}
               <button
                 onClick={() => removeFilter('barangay')}
                 className="ml-2 hover:text-destructive"
@@ -129,10 +133,12 @@ export function FilterBar({
             </Badge>
           )}
 
-          {filters.category && filters.category.length > 0 && (
+          {filters.category && filters.category !== 'all' && (
             <Badge variant="secondary" className="px-3 py-1">
               <Package className="h-3 w-3 mr-1" />
-              Category: {filters.category.join(', ')}
+              Category: {Array.isArray(filters.category) 
+                ? filters.category.join(', ') 
+                : filters.category}
               <button
                 onClick={() => removeFilter('category')}
                 className="ml-2 hover:text-destructive"
@@ -158,7 +164,9 @@ export function FilterBar({
           {filters.basketSize && filters.basketSize.length > 0 && (
             <Badge variant="secondary" className="px-3 py-1">
               <ShoppingCart className="h-3 w-3 mr-1" />
-              Basket: {filters.basketSize.join(', ')} items
+              Basket: {Array.isArray(filters.basketSize) 
+                ? filters.basketSize.join(', ') 
+                : filters.basketSize} items
               <button
                 onClick={() => removeFilter('basketSize')}
                 className="ml-2 hover:text-destructive"
