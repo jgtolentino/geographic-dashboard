@@ -2,9 +2,9 @@
   "../app/page.tsx -> @/components/scout-dashboard": {
     "id": 13399,
     "files": [
-      "static/chunks/721-45d57294aa8e1453.js",
+      "static/chunks/721-f4e3bef7c143bf95.js",
       "static/chunks/908.b98901a3cbe705ea.js",
-      "static/chunks/399.238464446852d490.js"
+      "static/chunks/399.35da807367fbc6bd.js"
     ]
   },
   "../node_modules/@supabase/auth-js/dist/module/lib/helpers.js -> @supabase/node-fetch": {

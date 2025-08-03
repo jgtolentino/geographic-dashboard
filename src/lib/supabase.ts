@@ -1,21 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cxzllzyxwpyptfretryc.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4emxsenl4d3B5cHRmcmV0cnljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNzYxODAsImV4cCI6MjA2Nzk1MjE4MH0.b794GEIWE4ZdMAm9xQYAJ0Gx-XEn1fhJBTIIeTro_1g'
 
-// Create a dummy client for build time if environment variables are missing
-const createSupabaseClient = () => {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    // During build time, create a dummy client to avoid errors
-    if (typeof window === 'undefined') {
-      return createClient('https://dummy.supabase.co', 'dummy-key')
-    }
-    throw new Error('Missing Supabase environment variables')
-  }
-  return createClient(supabaseUrl, supabaseAnonKey)
+// Validate environment variables
+if (typeof window !== 'undefined' && (!supabaseUrl || !supabaseAnonKey)) {
+  console.error('Missing Supabase environment variables')
 }
 
-export const supabase = createSupabaseClient()
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false // Disable persistence for better SSR compatibility
+  }
+})
 
 // Type definitions for Medallion pipeline tables
 export interface GoldDailyMetrics {
