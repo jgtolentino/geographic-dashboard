@@ -70,7 +70,7 @@ interface ConsumerProfile {
 }
 
 // ====================================================================
-// 1. EXECUTIVE OVERVIEW - REAL KPIs
+// 1. EXECUTIVE OVERVIEW - IMPROVED WITH DATA AVAILABILITY HANDLING
 // ====================================================================
 export function useExecutiveOverview() {
   const [data, setData] = useState<DashboardKPIs | null>(null)
@@ -81,12 +81,27 @@ export function useExecutiveOverview() {
     try {
       setLoading(true)
       
-      // Get current month data
-      const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
-      const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 7)
+      // First, find the most recent month with data
+      const { data: latestData } = await supabase
+        .from('silver_transactions_cleaned')
+        .select('timestamp')
+        .order('timestamp', { ascending: false })
+        .limit(1)
       
-      // Parallel fetch all KPI data
-      const [currentData, lastMonthData, storeCount] = await Promise.all([
+      if (!latestData || latestData.length === 0) {
+        throw new Error('No transaction data available')
+      }
+      
+      // Use the latest month with data instead of current month
+      const latestDate = new Date(latestData[0].timestamp)
+      const currentMonth = `${latestDate.getFullYear()}-${String(latestDate.getMonth() + 1).padStart(2, '0')}`
+      
+      // Calculate previous month from the latest data month
+      const prevDate = new Date(latestDate.getFullYear(), latestDate.getMonth() - 1, 1)
+      const lastMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`
+      
+      // Fetch data for both months
+      const [currentData, lastMonthData] = await Promise.all([
         supabase
           .from('silver_transactions_cleaned')
           .select('peso_value, basket_size, store_id')
@@ -97,54 +112,47 @@ export function useExecutiveOverview() {
           .from('silver_transactions_cleaned')
           .select('peso_value, basket_size, store_id')
           .gte('timestamp', `${lastMonth}-01`)
-          .lte('timestamp', `${lastMonth}-31`),
-          
-        supabase
-          .from('scout.silver_master_stores')
-          .select('id, created_at')
+          .lte('timestamp', `${lastMonth}-31`)
       ])
 
       if (currentData.error || lastMonthData.error) {
         throw new Error('Failed to fetch KPI data')
       }
 
-      // Calculate current month metrics
+      // Calculate metrics with null safety
       const currentRevenue = (currentData.data || []).reduce((sum, t) => sum + Number(t.peso_value || 0), 0)
       const currentTransactions = currentData.data?.length || 0
-      const currentStores = new Set((currentData.data || []).map(t => t.store_id)).size
+      const currentStores = new Set((currentData.data || []).map(t => t.store_id).filter(Boolean)).size
       const currentBasketSize = currentTransactions > 0 ? 
         (currentData.data || []).reduce((sum, t) => sum + Number(t.basket_size || 0), 0) / currentTransactions : 0
 
-      // Calculate last month metrics
       const lastRevenue = (lastMonthData.data || []).reduce((sum, t) => sum + Number(t.peso_value || 0), 0)
       const lastTransactions = lastMonthData.data?.length || 0
+      const lastStores = new Set((lastMonthData.data || []).map(t => t.store_id).filter(Boolean)).size
       const lastBasketSize = lastTransactions > 0 ? 
         (lastMonthData.data || []).reduce((sum, t) => sum + Number(t.basket_size || 0), 0) / lastTransactions : 0
 
-      // Calculate growth rates
-      const revenueGrowth = lastRevenue > 0 ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 : 0
-      const transactionGrowth = lastTransactions > 0 ? ((currentTransactions - lastTransactions) / lastTransactions) * 100 : 0
-      const basketGrowth = lastBasketSize > 0 ? ((currentBasketSize - lastBasketSize) / lastBasketSize) * 100 : 0
-      
-      // New stores this month
-      const newStoresThisMonth = (storeCount.data || []).filter((store: any) => 
-        new Date(store.created_at).toISOString().slice(0, 7) === currentMonth
-      ).length
+      // Calculate growth rates with zero protection
+      const revenueGrowth = lastRevenue > 0 ? Math.round(((currentRevenue - lastRevenue) / lastRevenue) * 100) : 0
+      const transactionGrowth = lastTransactions > 0 ? Math.round(((currentTransactions - lastTransactions) / lastTransactions) * 100) : 0
+      const storeGrowth = lastStores > 0 ? Math.round(((currentStores - lastStores) / lastStores) * 100) : 0
+      const basketGrowth = lastBasketSize > 0 ? Math.round(((currentBasketSize - lastBasketSize) / lastBasketSize) * 100) : 0
 
       setData({
         totalRevenue: currentRevenue,
-        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+        revenueGrowth,
         totalTransactions: currentTransactions,
-        transactionGrowth: Math.round(transactionGrowth * 10) / 10,
-        activeStores: storeCount.data?.length || currentStores,
-        newStores: newStoresThisMonth,
-        avgBasketSize: Math.round(currentBasketSize * 10) / 10,
-        basketGrowth: Math.round(basketGrowth * 10) / 10,
-        lastUpdated: new Date().toLocaleTimeString()
-      })
+        transactionGrowth,
+        activeStores: currentStores,
+        newStores: storeGrowth, // Using store growth as new stores indicator
+        avgBasketSize: currentBasketSize,
+        basketGrowth,
+        lastUpdated: new Date().toISOString(),
+        dataMonth: currentMonth
+      } as any)
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch KPI data')
+      setError(err instanceof Error ? err.message : 'Failed to fetch KPIs')
     } finally {
       setLoading(false)
     }
@@ -152,8 +160,7 @@ export function useExecutiveOverview() {
 
   useEffect(() => {
     fetchKPIs()
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchKPIs, 5 * 60 * 1000)
+    const interval = setInterval(fetchKPIs, 5 * 60 * 1000) // Refresh every 5 minutes
     return () => clearInterval(interval)
   }, [fetchKPIs])
 
@@ -262,80 +269,100 @@ export function useCategoryMix() {
 }
 
 // ====================================================================
-// 4. REGIONAL PERFORMANCE - BY LOCATION
+// 4. REGIONAL PERFORMANCE - IMPROVED LOCATION PARSING
 // ====================================================================
 export function useRegionalPerformance() {
   const [data, setData] = useState<RegionalPerformance[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchRegionalPerformance = useCallback(async () => {
+  const fetchRegionalData = useCallback(async () => {
     try {
       setLoading(true)
       
-      const { data: transactions, error } = await supabase
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      
+      const { data: transactions, error: txError } = await supabase
         .from('silver_transactions_cleaned')
-        .select('timestamp, peso_value, location')
-        .gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .select('location, peso_value, timestamp')
+        .gte('timestamp', thirtyDaysAgo.toISOString())
+        .limit(5000) // Reasonable limit for performance
 
-      if (error) throw error
+      if (txError) throw txError
 
-      // Group by region (extract from location JSON)
-      const regionalData = (transactions || []).reduce((acc: Record<string, any>, transaction) => {
+      // Group by region with better null handling
+      const regionalMap = new Map<string, { revenue: number; count: number; lastMonth: number }>()
+      
+      (transactions || []).forEach(tx => {
+        // Extract region with multiple fallbacks
         let region = 'Unknown'
-        
-        try {
-          if (transaction.location && typeof transaction.location === 'object') {
-            region = (transaction.location as any).region || 
-                    (transaction.location as any).province || 
-                    (transaction.location as any).city || 'Unknown'
-          }
-        } catch (e) {
-          region = 'Unknown'
-        }
-
-        if (!acc[region]) {
-          acc[region] = {
-            region,
-            revenue: 0,
-            transactions: 0,
-            growth: Math.random() * 20 - 5 // Mock growth for now
+        if (tx.location) {
+          if (typeof tx.location === 'string') {
+            try {
+              const loc = JSON.parse(tx.location)
+              region = loc.region || loc.province || loc.city || 'Unknown'
+            } catch {
+              region = tx.location
+            }
+          } else {
+            region = tx.location.region || tx.location.province || tx.location.city || 'Unknown'
           }
         }
         
-        acc[region].revenue += Number(transaction.peso_value || 0)
-        acc[region].transactions += 1
-        return acc
-      }, {})
+        const current = regionalMap.get(region) || { revenue: 0, count: 0, lastMonth: 0 }
+        current.revenue += Number(tx.peso_value || 0)
+        current.count += 1
+        
+        // Track if transaction is from last month for growth calculation
+        const txDate = new Date(tx.timestamp)
+        const isLastMonth = txDate < new Date(Date.now() - 15 * 24 * 60 * 60 * 1000)
+        if (isLastMonth) {
+          current.lastMonth += Number(tx.peso_value || 0)
+        }
+        
+        regionalMap.set(region, current)
+      })
 
-      const performanceData = Object.values(regionalData)
-        .sort((a: any, b: any) => b.revenue - a.revenue)
+      // Convert to array and calculate growth
+      const regionalData = Array.from(regionalMap.entries())
+        .map(([region, data]) => ({
+          region,
+          revenue: data.revenue,
+          transactions: data.count,
+          avgTransaction: data.count > 0 ? data.revenue / data.count : 0,
+          growth: data.lastMonth > 0 ? 
+            Math.round(((data.revenue - data.lastMonth) / data.lastMonth) * 100) : 0
+        }))
+        .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 10) // Top 10 regions
 
-      setData(performanceData as RegionalPerformance[])
+      setData(regionalData)
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch regional performance')
+      setError(err instanceof Error ? err.message : 'Failed to fetch regional data')
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchRegionalPerformance()
-  }, [fetchRegionalPerformance])
+    fetchRegionalData()
+    const interval = setInterval(fetchRegionalData, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [fetchRegionalData])
 
-  return { data, loading, error, refresh: fetchRegionalPerformance }
+  return { data, loading, error, refresh: fetchRegionalData }
 }
 
 // ====================================================================
-// 5. TRANSACTION TRENDS - DAILY PATTERNS
+// 5. TRANSACTION TRENDS - IMPROVED WEEK CALCULATION
 // ====================================================================
 export function useTransactionTrends() {
   const [data, setData] = useState<any>({
     todayTransactions: 0,
+    weekTransactions: 0,
     hourlyPattern: [],
-    weeklyTrend: []
+    peakHour: null
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -344,27 +371,47 @@ export function useTransactionTrends() {
     try {
       setLoading(true)
       
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date()
+      const todayStr = today.toISOString().split('T')[0]
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
       
-      // Get today's transactions
-      const { data: todayData, error: todayError } = await supabase
-        .from('silver_transactions_cleaned')
-        .select('id')
-        .gte('timestamp', `${today}T00:00:00`)
-        .lte('timestamp', `${today}T23:59:59`)
+      // Get today's and this week's transactions
+      const [todayData, weekData, hourlyData] = await Promise.all([
+        supabase
+          .from('silver_transactions_cleaned')
+          .select('id')
+          .gte('timestamp', `${todayStr}T00:00:00`)
+          .lte('timestamp', `${todayStr}T23:59:59`),
+        
+        supabase
+          .from('silver_transactions_cleaned')
+          .select('id')
+          .gte('timestamp', weekAgo.toISOString()),
+        
+        supabase.rpc('get_hourly_transaction_pattern')
+      ])
 
-      // Get hourly pattern
-      const { data: hourlyData, error: hourlyError } = await supabase
-        .rpc('get_hourly_transaction_pattern')
-
-      if (todayError || hourlyError) {
+      if (todayData.error || weekData.error || hourlyData.error) {
         throw new Error('Failed to fetch transaction trends')
       }
 
+      // Process hourly pattern to find peak
+      const hourlyPattern = (hourlyData.data || []).map((h: any) => ({
+        hour: h.hour_of_day || 0,
+        transactions: h.transaction_count || 0,
+        avgValue: h.avg_transaction_value || 0
+      }))
+
+      const peakHour = hourlyPattern.reduce((max: any, hour: any) => 
+        !max || hour.transactions > max.transactions ? hour : max, 
+        null
+      )
+
       setData({
-        todayTransactions: todayData?.length || 0,
-        hourlyPattern: hourlyData || [],
-        weeklyTrend: [] // Can be calculated from daily data
+        todayTransactions: todayData.data?.length || 0,
+        weekTransactions: weekData.data?.length || 0,
+        hourlyPattern,
+        peakHour
       })
 
     } catch (err) {
@@ -376,7 +423,6 @@ export function useTransactionTrends() {
 
   useEffect(() => {
     fetchTransactionTrends()
-    // Refresh every 2 minutes for real-time feel
     const interval = setInterval(fetchTransactionTrends, 2 * 60 * 1000)
     return () => clearInterval(interval)
   }, [fetchTransactionTrends])
@@ -653,18 +699,4 @@ export function useAIAssistant() {
   return { insights, loading, refresh: generateInsights }
 }
 
-// ====================================================================
-// EXPORT ALL HOOKS FOR DASHBOARD COMPONENTS
-// ====================================================================
-export {
-  useExecutiveOverview,
-  useRevenueTrend,
-  useCategoryMix,
-  useRegionalPerformance,
-  useTransactionTrends,
-  useProductMix,
-  useConsumerBehavior,
-  useConsumerProfiling,
-  useScoutDashboard,
-  useAIAssistant
-}
+// All hooks are already exported inline above
