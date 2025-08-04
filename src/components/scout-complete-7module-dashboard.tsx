@@ -17,6 +17,7 @@ import {
   AlertCircle, CheckCircle, Activity, BarChart3, Target, Trophy, 
   Zap, Globe, RefreshCw, Filter
 } from 'lucide-react'
+import { SuqiIntelChat } from './suqiintel-chat'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B', '#4ECDC4']
 
@@ -51,6 +52,8 @@ interface DashboardData {
     marketShare: number
     customerSatisfaction: number
     campaignROI: number
+    goldLayerRevenue?: number
+    avgCesScore?: number
   }
 }
 
@@ -366,7 +369,7 @@ export function ScoutComplete7ModuleDashboard() {
     }, {})
 
     // Calculate market share within each category
-    const categoryTotals = Object.values(brandAnalysis).reduce((acc: any, brand: any) => {
+    const categoryTotals: Record<string, number> = Object.values(brandAnalysis).reduce((acc: Record<string, number>, brand: any) => {
       if (!acc[brand.category]) {
         acc[brand.category] = 0
       }
@@ -959,6 +962,16 @@ export function ScoutComplete7ModuleDashboard() {
       <div className="p-6">
         {renderModuleContent()}
       </div>
+
+      {/* SuqiIntel AI Assistant */}
+      <SuqiIntelChat 
+        onQuerySuccess={(data) => {
+          // Handle successful query results
+          console.log('SuqiIntel query results:', data)
+          // Optionally refresh dashboard data
+          fetchDashboardData()
+        }}
+      />
     </div>
   )
 }

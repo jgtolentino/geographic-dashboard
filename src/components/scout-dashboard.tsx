@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { SidebarNavigation } from '@/components/layout/sidebar-navigation'
 import { TopNavigation } from '@/components/layout/top-navigation'
 import { FilterBar } from '@/components/layout/filter-bar'
 import { RecommendationPanelV2 } from '@/components/ai/recommendation-panel-v2'
+import { SuqiIntelChat } from '@/components/suqiintel-chat'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,8 +24,12 @@ import {
   usePerformanceMetrics,
   useCategoryMix
 } from '@/lib/scout-dashboard-service-gold'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-import { TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, MapPin, AlertCircle, CheckCircle } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts'
+import { 
+  TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, MapPin, 
+  AlertCircle, CheckCircle, Brain, MessageSquare, BarChart3, Package,
+  Target, Clock, Eye, RefreshCw, Settings, ChevronDown, ChevronUp
+} from 'lucide-react'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
 
@@ -41,7 +47,9 @@ export function ScoutDashboard() {
     customerSegment: 'all'
   })
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false)
+  const [isSuqiChatOpen, setIsSuqiChatOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [suqiMinimized, setSuqiMinimized] = useState(false)
 
   // Data hooks with refresh intervals
   const { data: executiveData, loading: execLoading, error: execError, refresh: refetchExec } = useExecutiveOverview()
@@ -97,93 +105,162 @@ export function ScoutDashboard() {
     }
   }, [refetchExec, refetchTrends, refetchProduct, refetchBehavior, refetchRegional, refetchProfiling, refetchHealth, refetchMetrics])
 
-  const renderModule = () => {
-    switch (currentModule) {
-      case 'home':
-        return <HomeModule />
-      case 'transaction-trends':
-        return <TransactionTrendsModule />
-      case 'product-mix':
-        return <ProductMixModule />
-      case 'consumer-behavior':
-        return <ConsumerBehaviorModule />
-      case 'consumer-profiling':
-        return <ConsumerProfilingModule />
-      case 'regional-performance':
-        return <RegionalPerformanceModule />
-      case 'business-health':
-        return <BusinessHealthModule />
-      default:
-        return <HomeModule />
-    }
+  const handleSuqiQuerySuccess = (data: any) => {
+    console.log('SUQI Intel query successful:', data)
+    // Could trigger data refresh or update specific modules
   }
 
-  // Component modules
+  const renderModule = () => {
+    const moduleContent = (() => {
+      switch (currentModule) {
+        case 'home':
+          return <HomeModule />
+        case 'transaction-trends':
+          return <TransactionTrendsModule />
+        case 'product-mix':
+          return <ProductMixModule />
+        case 'consumer-behavior':
+          return <ConsumerBehaviorModule />
+        case 'consumer-profiling':
+          return <ConsumerProfilingModule />
+        case 'regional-performance':
+          return <RegionalPerformanceModule />
+        case 'business-health':
+          return <BusinessHealthModule />
+        default:
+          return <HomeModule />
+      }
+    })()
+
+    return (
+      <motion.div
+        key={currentModule}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+        {moduleContent}
+      </motion.div>
+    )
+  }
+
+  // Enhanced component modules with animations
   const HomeModule = () => (
     <div className="space-y-6">
+      {/* SUQI Intel Integration Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl p-4 text-white mb-6"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Brain className="h-8 w-8" />
+            <div>
+              <h3 className="text-lg font-semibold">SUQI Intel Enabled</h3>
+              <p className="text-sm text-purple-100">Ask questions about your data in natural language</p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => setIsSuqiChatOpen(true)}
+            variant="outline"
+            className="border-white/30 text-white hover:bg-white/20"
+            size="sm"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Open Chat
+          </Button>
+        </div>
+      </motion.div>
+
       {/* Executive Overview KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${executiveData?.totalRevenue?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground">
-              {executiveData?.revenueGrowth && (
-                <span className={`flex items-center ${executiveData.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {executiveData.revenueGrowth >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                  {Math.abs(executiveData.revenueGrowth).toFixed(1)}% from last period
-                </span>
-              )}
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900">₱{executiveData?.totalRevenue?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">
+                {executiveData?.revenueGrowth && (
+                  <span className={`flex items-center ${executiveData.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {executiveData.revenueGrowth >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                    {Math.abs(executiveData.revenueGrowth).toFixed(1)}% from last period
+                  </span>
+                )}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{executiveData?.totalTransactions?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground">
-              {executiveData?.transactionGrowth && (
-                <span className={`flex items-center ${executiveData.transactionGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {executiveData.transactionGrowth >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                  {Math.abs(executiveData.transactionGrowth).toFixed(1)}% from last period
-                </span>
-              )}
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="bg-gradient-to-br from-green-50 to-green-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-900">{executiveData?.totalTransactions?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">
+                {executiveData?.transactionGrowth && (
+                  <span className={`flex items-center ${executiveData.transactionGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {executiveData.transactionGrowth >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                    {Math.abs(executiveData.transactionGrowth).toFixed(1)}% from last period
+                  </span>
+                )}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Stores</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{executiveData?.activeStores?.toLocaleString() || '0'}</div>
-            <p className="text-xs text-muted-foreground">
-              Active stores
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Stores</CardTitle>
+              <Users className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-900">{executiveData?.activeStores?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">
+                Active stores
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${executiveData?.avgBasketSize?.toFixed(2) || '0.00'}</div>
-            <p className="text-xs text-muted-foreground">
-              Average transaction value
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
+              <DollarSign className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-900">₱{executiveData?.avgBasketSize?.toFixed(2) || '0.00'}</div>
+              <p className="text-xs text-muted-foreground">
+                Average transaction value
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Business Health Alerts */}
@@ -788,17 +865,91 @@ export function ScoutDashboard() {
         }}
       />
 
-      {/* Floating AI Button */}
-      {!isAIPanelOpen && (
-        <button
-          onClick={() => setIsAIPanelOpen(true)}
-          className="fixed bottom-6 right-6 p-4 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-        </button>
-      )}
+      {/* SUQI Intel Chat Integration */}
+      <AnimatePresence>
+        {isSuqiChatOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 400 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 400 }}
+            transition={{ type: 'spring', damping: 25 }}
+            className="fixed right-6 top-20 bottom-6 w-96 z-50"
+          >
+            <div className="h-full bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+              <div className="h-full flex flex-col">
+                <div className="p-4 border-b bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Brain className="h-5 w-5" />
+                      <div>
+                        <h3 className="font-semibold">SUQI Intel Assistant</h3>
+                        <p className="text-xs text-purple-100">Ask questions about your Scout data</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        onClick={() => setSuqiMinimized(!suqiMinimized)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-white hover:bg-white/20 p-1"
+                      >
+                        {suqiMinimized ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        onClick={() => setIsSuqiChatOpen(false)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-white hover:bg-white/20 p-1"
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                {!suqiMinimized && (
+                  <div className="flex-1">
+                    <SuqiIntelChat 
+                      onQuerySuccess={handleSuqiQuerySuccess}
+                      className="h-full border-none shadow-none rounded-none"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating AI Buttons */}
+      <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-40">
+        {/* SUQI Intel Chat Button */}
+        {!isSuqiChatOpen && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsSuqiChatOpen(true)}
+            className="w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+          >
+            <Brain className="w-6 h-6" />
+          </motion.button>
+        )}
+        
+        {/* Original AI Panel Button */}
+        {!isAIPanelOpen && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsAIPanelOpen(true)}
+            className="w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+          >
+            <BarChart3 className="w-6 h-6" />
+          </motion.button>
+        )}
+      </div>
     </div>
   )
 }

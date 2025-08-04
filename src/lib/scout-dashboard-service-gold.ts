@@ -480,6 +480,174 @@ export function usePredictiveInsights() {
 }
 
 // ====================================================================
+// PRODUCT CASCADE FILTERING SYSTEM - RPC FUNCTIONS
+// ====================================================================
+
+interface ProductFilterOptions {
+  companies: Array<{ company_name: string; brand_count: number; sku_count: number }>
+  brands: Array<{ brand_name: string; company_name: string; category_count: number; sku_count: number }>
+  categories: Array<{ category_name: string; brand_count: number; sku_count: number }>
+  skus: Array<{ sku_name: string; brand_name: string; category_name: string; company_name: string }>
+  currentLevel: 'company' | 'brand' | 'category' | 'sku'
+}
+
+// Product Cascade Filtering Hook
+export function useProductCascadeFilter(sessionId: string, currentSelections: any = {}) {
+  const [data, setData] = useState<ProductFilterOptions | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchFilterOptions = useCallback(async (selections: any = currentSelections) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data: filterData, error: fetchError } = await supabase
+        .rpc('get_product_filter_options', {
+          p_session_id: sessionId,
+          p_current_selections: selections
+        })
+
+      if (fetchError) throw fetchError
+
+      setData(filterData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch filter options')
+    } finally {
+      setLoading(false)
+    }
+  }, [sessionId])
+
+  useEffect(() => {
+    fetchFilterOptions()
+  }, [fetchFilterOptions])
+
+  return { 
+    data, 
+    loading, 
+    error, 
+    refresh: fetchFilterOptions,
+    updateFilters: fetchFilterOptions
+  }
+}
+
+// Smart Product Recommendations
+export function useProductRecommendations(sessionId: string, filters: any = {}) {
+  const [data, setData] = useState<Array<{
+    sku_name: string
+    brand_name: string
+    category_name: string
+    company_name: string
+    recommendation_score: number
+    reason: string
+  }>>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchRecommendations = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data: recommendations, error: fetchError } = await supabase
+        .rpc('get_smart_product_recommendations', {
+          p_session_id: sessionId,
+          p_filters: filters,
+          p_limit: 10
+        })
+
+      if (fetchError) throw fetchError
+
+      setData(recommendations || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch recommendations')
+    } finally {
+      setLoading(false)
+    }
+  }, [sessionId, filters])
+
+  useEffect(() => {
+    fetchRecommendations()
+  }, [fetchRecommendations])
+
+  return { data, loading, error, refresh: fetchRecommendations }
+}
+
+// Performance Analytics with Filtering
+export function useFilteredPerformanceAnalytics(sessionId: string, filters: any = {}) {
+  const [data, setData] = useState<{
+    totalRevenue: number
+    totalTransactions: number
+    avgTransactionValue: number
+    uniqueCustomers: number
+    topPerformingBrands: Array<{ brand_name: string; revenue: number; growth: number }>
+    regionalBreakdown: Array<{ region: string; revenue: number; transactions: number }>
+  } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data: analytics, error: fetchError } = await supabase
+        .rpc('get_filtered_performance_analytics', {
+          p_session_id: sessionId,
+          p_filters: filters
+        })
+
+      if (fetchError) throw fetchError
+
+      setData(analytics)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch analytics')
+    } finally {
+      setLoading(false)
+    }
+  }, [sessionId, filters])
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
+
+  return { data, loading, error, refresh: fetchAnalytics }
+}
+
+// SUQI Intel Query Integration
+export function useSuqiIntelQuery() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const executeQuery = useCallback(async (naturalLanguageQuery: string, sessionId?: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data: result, error: queryError } = await supabase.functions.invoke('suqiintel-processor', {
+        body: {
+          query: naturalLanguageQuery,
+          session_id: sessionId || `session_${Date.now()}`,
+          context: 'scout_dashboard'
+        }
+      })
+
+      if (queryError) throw queryError
+
+      return result
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to execute SUQI Intel query'
+      setError(errorMessage)
+      throw new Error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { executeQuery, loading, error }
+}
+
+// ====================================================================
 // BUSINESS HEALTH & PERFORMANCE METRICS (Legacy Support)
 // ====================================================================
 export function useBusinessHealth(filters: FilterState) {
@@ -802,6 +970,12 @@ export default {
   useLocationIntelligence,
   useCustomerSegmentation,
   usePredictiveInsights,
+  
+  // Product Cascade & SUQI Intel hooks
+  useProductCascadeFilter,
+  useProductRecommendations,
+  useFilteredPerformanceAnalytics,
+  useSuqiIntelQuery,
   
   // Legacy compatibility hooks
   useTransactionTrends,
